@@ -1,5 +1,6 @@
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.html.js.onClickFunction
 import react.*
 import react.dom.h1
 import react.dom.li
@@ -16,16 +17,32 @@ val app = functionComponent<Props> { _ ->
         }
     }
 
-    h1{
+    h1 {
         +"Full-stack shopping list"
     }
     ul {
-        shoppingList.sortedByDescending { it.priority }.forEach {item ->
-            li{
+        shoppingList.sortedByDescending { it.priority }.forEach { item ->
+            li {
                 key = item.toString()
+                attrs.onClickFunction = {
+                    scope.launch {
+                        deleteShoppingListItem(item)
+                        shoppingList = getShoppingList()
+                    }
+                }
                 +"[${item.priority}] ${item.desc}"
             }
         }
     }
+    child(inputComponent){
+        attrs.onSubmit = { input ->
+            scope.launch {
+                addShoppingListItem(
+                    ShoppingListItem(desc = input.replace("!", ""), priority = input.count { it =='!' })
+                )
+                shoppingList = getShoppingList()
+            }
 
+        }
+    }
 }
